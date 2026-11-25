@@ -4,14 +4,15 @@
 >
 > **Installe le téléchargeur de vidéos en suivant https://github.com/miguelcorradopicq/claude-video-downloader/blob/main/INSTALLATION.md**
 
-Claude : l'utilisateur t'a demandé d'installer ce plugin. Réponds en français, fais tout toi-même et ne lui pose qu'une seule question (les réglages, étape 4). Annonce d'abord en deux lignes ce que tu vas faire : installer le plugin depuis GitHub, installer les outils yt-dlp et ffmpeg, puis lui demander où enregistrer les vidéos.
+Claude : l'utilisateur t'a demandé d'installer ce plugin. Réponds en français, fais tout toi-même et ne lui pose qu'une seule question (les réglages, étape 4). Annonce d'abord en deux lignes ce que tu vas faire : installer le plugin depuis GitHub, installer les outils yt-dlp, ffmpeg et deno, puis lui demander où enregistrer les vidéos.
 
 ## 1. Trouver la commande `claude`
 
-L'application de bureau n'ajoute pas toujours `claude` au PATH. Dans l'ordre :
+L'application de bureau n'ajoute pas toujours `claude` au PATH, et son emplacement change selon les versions. Dans l'ordre :
 1. `claude --version` : si ça répond, utilise `claude`.
-2. Windows : le plus récent des fichiers `claude.exe` sous `%APPDATA%\Claude\claude-code\` (par exemple `%APPDATA%\Claude\claude-code\<version>\<id>\claude.exe`).
-3. macOS : le plus récent des fichiers `claude` sous `~/Library/Application Support/Claude/claude-code/`.
+2. Windows : le plus récent des fichiers `claude.exe` trouvés dans un dossier `claude-code` sous `%LOCALAPPDATA%\Claude-Data\` (par exemple `%LOCALAPPDATA%\Claude-Data\<dossier du compte>\claude-code\<version>\<id>\claude.exe`) ou sous `%APPDATA%\Claude\claude-code\`. En PowerShell :
+   `Get-ChildItem "$env:LOCALAPPDATA\Claude-Data", "$env:APPDATA\Claude\claude-code" -Recurse -Filter claude.exe -Depth 5 -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1 -ExpandProperty FullName`
+3. macOS : le plus récent des fichiers `claude` sous `~/Library/Application Support/Claude/claude-code/` ou dans un dossier `claude-code` sous `~/Library/Application Support/Claude-Data/`.
 
 Si tu ne trouves aucune commande `claude`, passe directement à l'étape 2 bis.
 

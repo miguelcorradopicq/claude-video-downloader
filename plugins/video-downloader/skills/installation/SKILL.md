@@ -1,6 +1,6 @@
 ---
 name: installation
-description: Installe et configure le téléchargeur de vidéos sur cet ordinateur : outils yt-dlp et ffmpeg, dossier d'enregistrement, version par défaut, mises à jour automatiques du plugin, puis un téléchargement d'essai. À utiliser juste après l'installation du plugin, quand le script signale des outils manquants, ou quand l'utilisateur dit « installe », « configure », « répare » le téléchargeur de vidéos.
+description: Installe et configure le téléchargeur de vidéos sur cet ordinateur : outils yt-dlp, ffmpeg et deno, dossier d'enregistrement, version par défaut, mises à jour automatiques du plugin, puis un téléchargement d'essai. À utiliser juste après l'installation du plugin, quand le script signale des outils manquants, ou quand l'utilisateur dit « installe », « configure », « répare » le téléchargeur de vidéos.
 allowed-tools: PowerShell(powershell *) PowerShell(pwsh *) Bash(powershell *) Bash(pwsh *)
 ---
 
@@ -14,9 +14,9 @@ Script : `${CLAUDE_SKILL_DIR}/../video-downloader/scripts/video.ps1`. Sous Windo
 
 Sous Windows, PowerShell est déjà là. Sur Mac, si `pwsh` est introuvable : `brew install powershell` (si `brew` manque aussi, dis à l'utilisateur d'installer Homebrew depuis https://brew.sh, puis reprends).
 
-## 2. Outils yt-dlp et ffmpeg
+## 2. Outils yt-dlp, ffmpeg et deno
 
-Lance le script avec `-InstallerOutils`. Il utilise winget (Windows) ou Homebrew (Mac) et installe seulement ce qui manque.
+Lance le script avec `-InstallerOutils`. Il utilise winget (Windows) ou Homebrew (Mac) et installe seulement ce qui manque. deno est le moteur JavaScript dont yt-dlp a besoin pour YouTube.
 - S'il répond « OUTILS OK », passe à la suite.
 - S'il répond « OUTILS MANQUANTS après installation », c'est en général le PATH qui n'est pas encore à jour : dis à l'utilisateur de quitter complètement l'application Claude (aussi depuis la zone de notification sous Windows), de la rouvrir, puis de taper `/video-downloader:installation` pour finir.
 

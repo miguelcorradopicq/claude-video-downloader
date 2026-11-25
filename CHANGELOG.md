@@ -2,6 +2,11 @@
 
 Chaque envoi sur GitHub est une nouvelle version : les utilisateurs la reçoivent automatiquement au démarrage suivant de l'application Claude.
 
+## 2026-11-25 (4)
+
+- YouTube : l'installation ajoute **deno**, le moteur JavaScript dont yt-dlp a besoin pour récupérer tous les formats. Si tu avais déjà installé l'outil, Claude l'ajoute tout seul au prochain téléchargement.
+- Installation : la commande `claude` de l'application est aussi cherchée sous `%LOCALAPPDATA%\Claude-Data\`, où les versions récentes de l'application la rangent sous Windows.
+
 ## 2026-11-25 (3)
 
 - Le dépôt passe sur le compte GitHub `miguelcorradopicq` : tous les liens sont mis à jour. Si tu avais installé l'ancienne version, réinstalle avec le message du README.

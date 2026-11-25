@@ -15,7 +15,7 @@ Ce fichier sert à reprendre le projet dans n'importe quelle session Claude Code
 2. Dans le **même envoi** que la modification, mettre à jour : `README.md`, `CHANGELOG.md`, `INSTALLATION.md` si l'installation change, et `docs/installation.html`. Si la page d'installation est publiée en artefact Claude, la republier au même lien.
 3. **Ne jamais ajouter de champ `version`** dans `plugin.json` ni dans `marketplace.json` : sans lui, chaque envoi sur GitHub est une nouvelle version et part automatiquement chez tous ceux qui ont activé l'auto-update.
 4. Le script `video.ps1` doit rester en **UTF-8 avec BOM** (sinon Windows PowerShell 5.1 abîme les accents) et compatible PowerShell 5.1 et 7, Windows et macOS.
-5. Avant d'envoyer : `claude plugin validate .` à la racine. Sur Windows avec l'application de bureau, la commande `claude` n'est pas forcément dans le PATH : prendre le plus récent `claude.exe` sous `%APPDATA%\Claude\claude-code\`.
+5. Avant d'envoyer : `claude plugin validate .` à la racine. Sur Windows avec l'application de bureau, la commande `claude` n'est pas forcément dans le PATH : prendre le plus récent `claude.exe` dans un dossier `claude-code` sous `%LOCALAPPDATA%\Claude-Data\` (versions récentes de l'application) ou sous `%APPDATA%\Claude\claude-code\` (anciennes versions). La commande PowerShell est dans `INSTALLATION.md`, étape 1.
 6. Après l'envoi, pour l'avoir tout de suite chez soi : `claude plugin marketplace update video-tools` puis `claude plugin update video-downloader@video-tools`, et redémarrer l'application.
 
 ## Comment l'outil choisit la version WhatsApp
@@ -30,7 +30,9 @@ Ce fichier sert à reprendre le projet dans n'importe quelle session Claude Code
 
 - LinkedIn : les liens courts `lnkd.in` et les paramètres de partage font échouer yt-dlp ; le script les résout et les retire. Les vidéos LinkedIn n'ont pas de nom d'auteur (le nom de fichier commence par « Video - »).
 - Posts réservés aux membres : option `-Navigateur` (cookies du navigateur ; sous Windows, Chrome et Edge doivent être fermés).
-- Pas encore vérifiés : l'emplacement exact de `claude` dans l'application Mac, et si `allowed-tools` évite toutes les demandes d'autorisation à chaque téléchargement. À contrôler lors des premières installations.
+- YouTube : yt-dlp a besoin d'un moteur JavaScript (deno) pour extraire tous les formats ; sans lui, il affiche « No supported JavaScript runtime could be found » et certains formats peuvent manquer. `-InstallerOutils` installe deno (winget `DenoLand.Deno`, Homebrew `deno`) ; un téléchargement sans deno n'est pas bloqué mais le script affiche « DENO MANQUANT ».
+- Emplacement de `claude.exe` sous Windows : vu le 2026-11-25 sous `%LOCALAPPDATA%\Claude-Data\<dossier du compte>\claude-code\<version>\<id>\` (application 2.1.330), et non plus sous `%APPDATA%\Claude\claude-code\`.
+- Pas encore vérifiés : l'emplacement exact de `claude` dans l'application Mac (`Claude/claude-code` ou `Claude-Data/.../claude-code`), et si `allowed-tools` évite toutes les demandes d'autorisation à chaque téléchargement. À contrôler lors des premières installations.
 
 ## Idées en attente
 

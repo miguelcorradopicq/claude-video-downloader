@@ -19,7 +19,7 @@ Il faut l'**application Claude** pour ordinateur (Windows ou Mac), avec l'onglet
 
    > Installe le téléchargeur de vidéos en suivant https://github.com/miguelcorradopicq/claude-video-downloader/blob/main/INSTALLATION.md
 
-3. Claude installe tout seul le plugin, les outils nécessaires (yt-dlp et ffmpeg) et les mises à jour automatiques. Il te pose une seule question : dans quel dossier enregistrer les vidéos, et quelle version faire par défaut. Accepte les autorisations qu'il demande.
+3. Claude installe tout seul le plugin, les outils nécessaires (yt-dlp, ffmpeg et deno) et les mises à jour automatiques. Il te pose une seule question : dans quel dossier enregistrer les vidéos, et quelle version faire par défaut. Accepte les autorisations qu'il demande.
 4. Ouvre une **nouvelle** session et colle un lien vidéo. C'est tout.
 
 Le choix du modèle, de l'effort et du dossier de travail dans l'application n'a pas d'importance : n'importe quel modèle sait utiliser l'outil.
@@ -88,6 +88,7 @@ Change-les en le demandant à Claude ou avec `/video-downloader:reglages`.
 
 - **yt-dlp** : téléchargement depuis les sites vidéo ;
 - **ffmpeg** : préparation des fichiers ;
+- **deno** : moteur JavaScript dont yt-dlp a besoin pour YouTube ;
 - sur Mac seulement, **PowerShell** (`brew install powershell`), qui fait tourner le script.
 
 Sous Windows, ils sont installés avec winget ; sur Mac, avec Homebrew.

@@ -30,6 +30,8 @@ Réponds toujours en français.
 
 Si le script répond « Outils manquants » ou si les réglages n'ont jamais été créés (`-Reglages` affiche « pas encore créés »), suis d'abord le skill `installation` de ce plugin (`/video-downloader:installation`), puis reprends le téléchargement.
 
+Si le script affiche « DENO MANQUANT » (installations faites avant l'ajout de deno), lance-le une fois avec `-InstallerOutils` après le téléchargement, sans poser de question, et dis-le en une ligne.
+
 ## Cas particuliers
 
 - Garde le lien tel quel : le script nettoie déjà les paramètres de partage LinkedIn et résout les liens courts `lnkd.in`.

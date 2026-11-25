@@ -83,32 +83,40 @@ function Update-Path {
     $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
   } elseif (Test-Path '/opt/homebrew/bin') { $env:PATH = "/opt/homebrew/bin:/usr/local/bin:$env:PATH" }
 }
-function Get-Manquants { @('yt-dlp', 'ffmpeg', 'ffprobe') | Where-Object { -not (Get-Command $_ -ErrorAction SilentlyContinue) } }
+# deno : moteur JavaScript dont yt-dlp a besoin pour YouTube (sans lui, certains formats manquent ou échouent).
+# Il est installé avec les autres outils, mais son absence ne bloque pas un téléchargement.
+function Get-Manquants([switch]$AvecDeno) {
+  $outils = @('yt-dlp', 'ffmpeg', 'ffprobe'); if ($AvecDeno) { $outils += 'deno' }
+  $outils | Where-Object { -not (Get-Command $_ -ErrorAction SilentlyContinue) }
+}
 Update-Path
 if ($InstallerOutils) {
-  $m = Get-Manquants
-  if (-not $m) { Write-Host 'OUTILS OK : yt-dlp, ffmpeg et ffprobe sont déjà installés.' }
+  $m = Get-Manquants -AvecDeno
+  if (-not $m) { Write-Host 'OUTILS OK : yt-dlp, ffmpeg, ffprobe et deno sont déjà installés.' }
   elseif ($surWindows) {
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) { throw "winget est introuvable. Installe « App Installer » depuis le Microsoft Store, puis relance." }
     if ($m -contains 'yt-dlp') { winget install --id yt-dlp.yt-dlp -e --silent --accept-source-agreements --accept-package-agreements | Out-Host }
     if ($m -contains 'ffmpeg' -or $m -contains 'ffprobe') { winget install --id Gyan.FFmpeg -e --silent --accept-source-agreements --accept-package-agreements | Out-Host }
+    if ($m -contains 'deno') { winget install --id DenoLand.Deno -e --silent --accept-source-agreements --accept-package-agreements | Out-Host }
   } elseif ($surMac) {
     if (-not (Get-Command brew -ErrorAction SilentlyContinue)) { throw "Homebrew est introuvable. Installe-le depuis https://brew.sh, puis relance." }
-    brew install yt-dlp ffmpeg | Out-Host
-  } else { throw "Installe yt-dlp et ffmpeg avec le gestionnaire de paquets de ta distribution." }
+    brew install yt-dlp ffmpeg deno | Out-Host
+  } else { throw "Installe yt-dlp, ffmpeg et deno avec le gestionnaire de paquets de ta distribution." }
   Update-Path
-  $m = Get-Manquants
+  $m = Get-Manquants -AvecDeno
   if ($m) { Write-Host "OUTILS MANQUANTS après installation : $($m -join ', '). Ferme et rouvre l'application Claude, puis relance -Verifier." }
-  else { Write-Host 'OUTILS OK : yt-dlp, ffmpeg et ffprobe sont installés.' }
+  else { Write-Host 'OUTILS OK : yt-dlp, ffmpeg, ffprobe et deno sont installés.' }
   return
 }
-$manquants = Get-Manquants
 if ($Verifier) {
-  if ($manquants) { Write-Host "OUTILS MANQUANTS : $($manquants -join ', ')" } else { Write-Host 'OUTILS OK : yt-dlp, ffmpeg, ffprobe' }
+  $m = Get-Manquants -AvecDeno
+  if ($m) { Write-Host "OUTILS MANQUANTS : $($m -join ', ')" } else { Write-Host 'OUTILS OK : yt-dlp, ffmpeg, ffprobe, deno' }
   Show-Reglages
   return
 }
+$manquants = Get-Manquants
 if ($manquants) { throw "Outils manquants : $($manquants -join ', '). Lance d'abord le script avec -InstallerOutils." }
+if (-not (Get-Command deno -ErrorAction SilentlyContinue)) { Write-Host "DENO MANQUANT : yt-dlp en a besoin pour YouTube. Lance le script avec -InstallerOutils pour l'ajouter." }
 if (-not $Source) { throw 'Donne un lien ou un fichier vidéo.' }
 if (-not $Dossier) { $Dossier = $cfg.Dossier }
 if (-not $Mode) { $Mode = $cfg.Mode }
