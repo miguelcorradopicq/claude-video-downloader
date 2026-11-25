@@ -1,0 +1,12 @@
+name: Idée d'amélioration
+description: Proposer une nouvelle fonction ou un changement
+title: "[Idée] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idee
+    attributes:
+      label: Ton idée
+      description: Ce que l'outil devrait faire, et dans quelle situation ça t'aiderait.
+    validations:
+      required: true

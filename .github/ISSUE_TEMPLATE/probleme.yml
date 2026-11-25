@@ -1,0 +1,40 @@
+name: Problème
+description: Une vidéo ne se télécharge pas ou le résultat n'est pas bon
+title: "[Problème] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Ce ticket est public : n'y mets ni chemin contenant ton nom, ni e-mail, ni lien de post privé."
+  - type: input
+    id: site
+    attributes:
+      label: Site concerné
+      placeholder: YouTube, LinkedIn, Instagram…
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Ce qui s'est passé
+      description: Ce que tu attendais, et ce qui s'est passé à la place.
+    validations:
+      required: true
+  - type: textarea
+    id: erreur
+    attributes:
+      label: Message d'erreur
+      description: Les dernières lignes affichées par le script.
+      render: text
+  - type: dropdown
+    id: systeme
+    attributes:
+      label: Système
+      options: [Windows, Mac, Linux]
+    validations:
+      required: true
+  - type: input
+    id: ytdlp
+    attributes:
+      label: Version de yt-dlp
+      description: Résultat de « yt-dlp --version » (Claude peut te la donner).

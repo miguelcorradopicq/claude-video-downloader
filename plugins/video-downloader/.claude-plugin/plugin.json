@@ -1,0 +1,9 @@
+{
+  "name": "video-downloader",
+  "description": "Colle un lien vidéo : Claude la télécharge et prépare une version WhatsApp (meilleure qualité sous 180 Mo) ou une version qualité maximale, dans le dossier de ton choix.",
+  "author": { "name": "Miguel Picq" },
+  "homepage": "https://github.com/miguelcorradopicq/claude-video-downloader",
+  "repository": "https://github.com/miguelcorradopicq/claude-video-downloader",
+  "license": "MIT",
+  "keywords": ["vidéo", "téléchargement", "whatsapp", "yt-dlp", "ffmpeg", "linkedin", "youtube"]
+}

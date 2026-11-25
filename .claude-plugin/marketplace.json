@@ -1,0 +1,12 @@
+{
+  "name": "video-tools",
+  "owner": { "name": "Miguel Picq" },
+  "description": "Outils vidéo pour Claude Code : télécharger une vidéo à partir d'un lien, prête pour WhatsApp ou en qualité maximale.",
+  "plugins": [
+    {
+      "name": "video-downloader",
+      "source": "./plugins/video-downloader",
+      "description": "Colle un lien vidéo : Claude la télécharge et prépare une version WhatsApp (meilleure qualité sous 180 Mo) ou une version qualité maximale."
+    }
+  ]
+}
