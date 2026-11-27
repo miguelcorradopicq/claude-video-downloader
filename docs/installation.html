@@ -1,140 +1,268 @@
 <title>Téléchargeur vidéo Claude</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Mise en page : une colonne de lecture ; un bloc "à coller" mis en avant comme une bande de film */
+/* Mise en page : une colonne de lecture en noir et blanc ; un seul objet fort, le « clap » des réglages de la session */
 :root {
-  --bg: #f3f5f2;
+  --bg: #f7f7f6;
   --surface: #ffffff;
-  --fg: #16201c;
-  --muted: #56645d;
-  --line: #d7ddd8;
-  --accent: #0e7a5c;
-  --accent-soft: #dcefe7;
-  --strip: #16201c;
-  --strip-fg: #f3f5f2;
-  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --fg: #0b0b0b;
+  --muted: #5d5d5b;
+  --line: #dededc;
+  --ink: #0b0b0b;      /* blocs inversés : fond */
+  --ink-fg: #f7f7f6;   /* blocs inversés : texte */
+  --ink-muted: #a3a3a0;
+  --ink-line: #2c2c2b;
+  --display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
   --body: "Inter", "Segoe UI", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f1512; --surface: #17201c; --fg: #e6ece8; --muted: #9aa8a1; --line: #2a3530;
-    --accent: #4cc79d; --accent-soft: #1b3a2f; --strip: #e6ece8; --strip-fg: #0f1512; color-scheme: dark;
+    --bg: #0c0c0c; --surface: #151515; --fg: #f1f1ef; --muted: #a2a2a0; --line: #2a2a29;
+    --ink: #f1f1ef; --ink-fg: #0c0c0c; --ink-muted: #5d5d5b; --ink-line: #d4d4d2; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0f1512; --surface: #17201c; --fg: #e6ece8; --muted: #9aa8a1; --line: #2a3530;
-  --accent: #4cc79d; --accent-soft: #1b3a2f; --strip: #e6ece8; --strip-fg: #0f1512; color-scheme: dark;
+  --bg: #0c0c0c; --surface: #151515; --fg: #f1f1ef; --muted: #a2a2a0; --line: #2a2a29;
+  --ink: #f1f1ef; --ink-fg: #0c0c0c; --ink-muted: #5d5d5b; --ink-line: #d4d4d2; color-scheme: dark;
 }
-body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.6; }
-.wrap { max-width: 760px; margin: 0 auto; padding-block: 48px 64px;
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 800px; margin: 0 auto; padding-block: 56px 72px;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
-  display: flex; flex-direction: column; gap: 44px; }
-h1, h2 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
-h1 { font-size: clamp(2rem, 6vw, 3rem); font-weight: 800; line-height: 1.05; }
-h2 { font-size: 1.45rem; font-weight: 600; }
-p { margin: 0; max-width: 65ch; }
-.lead { color: var(--muted); font-size: 1.1rem; margin-top: 14px; }
-.eyebrow { font-family: var(--mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
-section { display: flex; flex-direction: column; gap: 14px; }
-.modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-.mode { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
-.mode b { font-family: var(--display); font-size: 1.1rem; }
-.mode span { color: var(--muted); font-size: .94rem; }
-.mode code { font-family: var(--mono); font-size: .82rem; color: var(--accent); }
-ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 18px; counter-reset: s; }
-ol.steps > li { counter-increment: s; display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 14px; align-items: start; }
-ol.steps > li::before { content: counter(s); font-family: var(--display); font-weight: 800; font-size: 1.1rem; width: 36px; height: 36px; border-radius: 50%;
-  background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; }
-ol.steps > li > div { display: flex; flex-direction: column; gap: 10px; padding-top: 5px; min-width: 0; }
-.strip { background: var(--strip); color: var(--strip-fg); border-radius: 10px; padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 14px;
+  display: flex; flex-direction: column; gap: 64px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: -0.02em; }
+h1 { font-size: clamp(2.4rem, 7.5vw, 4rem); font-weight: 700; line-height: .98; }
+h2 { font-size: clamp(1.4rem, 3.4vw, 1.75rem); font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; }
+p { margin: 0; max-width: 64ch; }
+code { font-family: var(--mono); font-size: .86em; }
+a { color: var(--fg); text-underline-offset: 3px; }
+.label { font-family: var(--mono); font-size: .74rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+section { display: flex; flex-direction: column; gap: 20px; }
+.head { display: flex; flex-direction: column; gap: 8px; }
+.head p { color: var(--muted); }
+
+/* Ouverture */
+header { display: flex; flex-direction: column; gap: 22px; }
+.lead { color: var(--muted); font-size: 1.12rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.chips li { font-family: var(--mono); font-size: .8rem; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; }
+.chips li b { font-weight: 600; }
+
+/* Le clap : réglages de la session */
+.slate { background: var(--ink); color: var(--ink-fg); border-radius: 14px; overflow: hidden; }
+.slate-bar { height: 26px; background: repeating-linear-gradient(-45deg, var(--ink-fg) 0 18px, var(--ink) 18px 36px); border-bottom: 2px solid var(--ink-fg); }
+.slate-body { padding: 22px 22px 8px; display: flex; flex-direction: column; gap: 4px; }
+.slate-title { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; padding-bottom: 12px; }
+.slate-title h3 { font-size: 1.2rem; }
+.slate-title span { font-family: var(--mono); font-size: .74rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-muted); }
+.slate dl { margin: 0; display: grid; grid-template-columns: minmax(120px, 170px) minmax(0, 1fr); }
+.slate dt, .slate dd { margin: 0; padding: 13px 0; border-top: 1px solid var(--ink-line); }
+.slate dt { font-family: var(--mono); font-size: .76rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted); padding-top: 16px; }
+.slate dd { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.slate dd b { font-family: var(--display); font-size: 1.08rem; font-weight: 700; }
+.slate dd span { color: var(--ink-muted); font-size: .92rem; }
+
+/* Étapes */
+ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; counter-reset: s; }
+ol.steps > li { counter-increment: s; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 18px; position: relative; padding-bottom: 30px; }
+ol.steps > li:last-child { padding-bottom: 0; }
+ol.steps > li::before { content: counter(s); font-family: var(--display); font-weight: 700; font-size: 1.05rem; width: 44px; height: 44px; border-radius: 50%;
+  background: var(--ink); color: var(--ink-fg); display: grid; place-items: center; position: relative; z-index: 1; }
+ol.steps > li:not(:last-child)::after { content: ""; position: absolute; left: 21px; top: 44px; bottom: 0; width: 2px; background: var(--line); }
+ol.steps > li > div { display: flex; flex-direction: column; gap: 10px; padding-top: 9px; min-width: 0; }
+.path { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-family: var(--mono); font-size: .84rem; }
+.path kbd { font-family: var(--mono); border: 1px solid var(--line); border-bottom-width: 2px; background: var(--surface); border-radius: 6px; padding: 3px 8px; }
+.path i { font-style: normal; color: var(--muted); }
+
+.strip { background: var(--ink); color: var(--ink-fg); border-radius: 12px; display: flex; flex-direction: column; gap: 16px; padding: 30px 20px 26px;
   background-image: radial-gradient(circle, var(--bg) 3px, transparent 3.5px), radial-gradient(circle, var(--bg) 3px, transparent 3.5px);
-  background-size: 22px 10px, 22px 10px; background-position: 6px 4px, 6px calc(100% - 4px); background-repeat: repeat-x; padding-block: 26px; }
+  background-size: 22px 10px, 22px 10px; background-position: 8px 5px, 8px calc(100% - 5px); background-repeat: repeat-x; }
 .strip p { font-family: var(--mono); font-size: .92rem; line-height: 1.55; overflow-wrap: anywhere; max-width: none; }
-button { font: 600 .92rem var(--body); border: 0; border-radius: 8px; padding: 10px 16px; cursor: pointer; background: var(--accent); color: #fff; align-self: flex-start; }
-.strip button { background: var(--strip-fg); color: var(--strip); }
-button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+button { font: 600 .92rem var(--body); border: 0; border-radius: 8px; padding: 11px 18px; cursor: pointer; align-self: flex-start; background: var(--ink-fg); color: var(--ink); }
+button:focus-visible, a:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
+.strip button:focus-visible { outline-color: var(--ink-fg); }
 .note { color: var(--muted); font-size: .94rem; }
+
+/* Ce que tu peux demander */
+.modes { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.mode { background: var(--surface); padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+.mode .say { font-family: var(--mono); font-size: .8rem; align-self: flex-start; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; }
+.mode p { color: var(--muted); font-size: .93rem; }
+.mode .tag { font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: auto; padding-top: 4px; }
+
+/* Commandes et dépannage */
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
 table { width: 100%; border-collapse: collapse; font-size: .95rem; }
-.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
-th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
 tr:last-child td { border-bottom: 0; }
-th { font-family: var(--mono); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
-code { font-family: var(--mono); font-size: .88em; }
+th { font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
 td code { white-space: nowrap; }
-a { color: var(--accent); }
-footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--line); padding-top: 18px; display: flex; flex-direction: column; gap: 6px; }
+.faq { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.faq details { border-bottom: 1px solid var(--line); }
+.faq summary { cursor: pointer; list-style: none; padding: 16px 0; font-weight: 600; display: flex; justify-content: space-between; gap: 16px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font-family: var(--mono); font-weight: 400; color: var(--muted); }
+.faq details[open] summary::after { content: "−"; }
+.faq summary:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+.faq .ans { padding: 0 0 18px; color: var(--muted); display: flex; flex-direction: column; gap: 10px; }
+
+footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--line); padding-top: 20px; display: flex; flex-direction: column; gap: 6px; }
+
+@media (max-width: 520px) {
+  .slate dl { grid-template-columns: minmax(0, 1fr); }
+  .slate dt { padding-bottom: 0; }
+  .slate dd { border-top: 0; padding-top: 2px; }
+  ol.steps > li { grid-template-columns: 36px minmax(0, 1fr); gap: 14px; }
+  ol.steps > li::before { width: 36px; height: 36px; }
+  ol.steps > li:not(:last-child)::after { left: 17px; top: 36px; }
+  ol.steps > li > div { padding-top: 5px; }
+}
 @media (prefers-reduced-motion: no-preference) { button { transition: transform .12s; } button:active { transform: scale(.97); } }
 </style>
 
 <main class="wrap">
   <header>
-    <div class="eyebrow">Plugin Claude Code · gratuit</div>
+    <div class="label">Plugin Claude Code · gratuit</div>
     <h1>Colle un lien, récupère la vidéo.</h1>
-    <p class="lead">YouTube, Shorts, LinkedIn, Instagram, TikTok, Facebook, X : Claude télécharge la vidéo sur ton ordinateur, prête à partager sur WhatsApp, Discord ou par e-mail, en qualité maximale, en MP3 ou en extrait. Il peut aussi te la résumer. Aucun serveur, aucun compte à créer.</p>
+    <p class="lead">YouTube, Shorts, LinkedIn, Instagram, TikTok, Facebook, X : Claude télécharge la vidéo sur ton ordinateur, prête pour WhatsApp, Discord ou un e-mail, en qualité maximale, en MP3 ou en extrait. Il peut aussi te la résumer. Aucun serveur, aucun compte à créer.</p>
+    <ul class="chips" aria-label="Ce qu'il faut">
+      <li><b>Windows 10 / 11</b> ou <b>Mac</b></li>
+      <li>Abonnement <b>Claude Pro</b> ou <b>Max</b></li>
+      <li>Environ <b>5 minutes</b></li>
+    </ul>
   </header>
 
-  <section aria-labelledby="t-modes">
-    <h2 id="t-modes">Ce que tu peux demander</h2>
-    <div class="modes">
-      <div class="mode"><b>WhatsApp</b><span>Par défaut. La meilleure qualité possible sous la limite de 180 Mo, sans perte quand la vidéo est déjà compatible.</span><code>un lien seul</code></div>
-      <div class="mode"><b>Discord ou e-mail</b><span>Même méthode, sous 10 Mo pour Discord ou en pièce jointe acceptée par Gmail et Outlook.</span><code>lien + « pour Discord »</code></div>
-      <div class="mode"><b>Max</b><span>Le fichier d'origine, en pleine qualité, sans limite de taille.</span><code>lien + « max »</code></div>
-      <div class="mode"><b>MP3</b><span>Seulement le son : podcast, conférence, musique.</span><code>lien + « en mp3 »</code></div>
-      <div class="mode"><b>Extrait</b><span>Juste le passage qui t'intéresse, coupé à l'image près.</span><code>lien + « de 1:20 à 2:05 »</code></div>
-      <div class="mode"><b>Résumé ou texte</b><span>Claude lit les sous-titres et te résume la vidéo, ou t'en donne le texte complet.</span><code>lien + « résume »</code></div>
+  <section aria-labelledby="t-config">
+    <div class="head">
+      <h2 id="t-config">Avant de commencer : règle ta session</h2>
+      <p>Dans l'application Claude pour ordinateur, ouvre l'onglet Code. En bas de la zone de message, vérifie ces réglages avant d'envoyer quoi que ce soit.</p>
+    </div>
+    <div class="slate">
+      <div class="slate-bar" aria-hidden="true"></div>
+      <div class="slate-body">
+        <div class="slate-title"><h3>Réglages de la session d'installation</h3><span>Onglet Code</span></div>
+        <dl>
+          <dt>Application</dt>
+          <dd><b>Claude pour ordinateur</b><span>Pas le site claude.ai dans un navigateur, ni l'application téléphone.</span></dd>
+          <dt>Onglet</dt>
+          <dd><b>Code</b><span>En haut de la fenêtre, à côté de Chat. Puis « Nouvelle session ».</span></dd>
+          <dt>Environnement</dt>
+          <dd><b>This computer</b><span>Pas « Cloud » : les vidéos doivent arriver sur ton ordinateur.</span></dd>
+          <dt>Dossier</dt>
+          <dd><b>Aucun</b><span>Laisse « No folder ». Tu choisiras le dossier des vidéos pendant l'installation.</span></dd>
+          <dt>Modèle</dt>
+          <dd><b>Sonnet</b><span>Le plus économique. Opus marche aussi, mais consomme plus de ton quota.</span></dd>
+          <dt>Effort</dt>
+          <dd><b>Medium</b><span>Suffisant pour l'installation et pour tous les téléchargements.</span></dd>
+          <dt>Autorisations</dt>
+          <dd><b>Auto</b><span>Si Claude demande une autorisation pendant l'installation, clique « Autoriser » (Allow).</span></dd>
+        </dl>
+      </div>
     </div>
   </section>
 
   <section aria-labelledby="t-install">
-    <h2 id="t-install">Installation en 2 minutes</h2>
+    <div class="head">
+      <h2 id="t-install">Installation</h2>
+      <p>Une seule fois par ordinateur. Claude fait tout, tu réponds à une question.</p>
+    </div>
     <ol class="steps">
-      <li><div><p>Ouvre l'<b>application Claude</b> sur ton ordinateur (Windows ou Mac), va dans l'onglet <b>Code</b> et démarre une nouvelle session. N'importe quel modèle et n'importe quel effort conviennent.</p></div></li>
       <li><div>
-        <p>Colle ce message et envoie-le :</p>
+        <h3>Ouvre une nouvelle session avec les réglages ci-dessus</h3>
+        <div class="path"><kbd>Claude</kbd><i>→</i><kbd>Code</kbd><i>→</i><kbd>Nouvelle session</kbd><i>→</i><kbd>This computer</kbd></div>
+      </div></li>
+      <li><div>
+        <h3>Colle ce message et envoie-le</h3>
         <div class="strip">
           <p id="prompt">Installe le téléchargeur de vidéos en suivant https://github.com/miguelcorradopicq/claude-video-downloader/blob/main/INSTALLATION.md</p>
           <button type="button" id="copy">Copier le message</button>
         </div>
+        <p class="note">Claude installe le plugin et les outils yt-dlp, ffmpeg et deno. Ça prend deux à trois minutes ; laisse la fenêtre ouverte.</p>
       </div></li>
-      <li><div><p>Claude installe tout seul le plugin, les outils <b>yt-dlp</b>, <b>ffmpeg</b> et <b>deno</b>, et les mises à jour automatiques. Accepte les autorisations qu'il demande, puis réponds à sa seule question : le dossier où enregistrer les vidéos et la version par défaut.</p></div></li>
-      <li><div><p>Ouvre une <b>nouvelle</b> session et colle un lien vidéo. C'est prêt.</p></div></li>
+      <li><div>
+        <h3>Réponds à sa seule question</h3>
+        <p>Où enregistrer les vidéos (ton dossier Téléchargements, ou un dossier Google Drive, OneDrive, Dropbox) et quelle version par défaut. Choisis <b>WhatsApp</b> si tu ne sais pas.</p>
+      </div></li>
+      <li><div>
+        <h3>Active les mises à jour automatiques</h3>
+        <p>Claude essaie de le faire seul, mais le mode Auto peut l'en empêcher. Vérifie en 30 secondes dans la même session :</p>
+        <div class="path"><kbd>/plugin</kbd><i>→</i><kbd>Marketplaces</kbd><i>→</i><kbd>video-tools</kbd><i>→</i><kbd>auto-update : activé</kbd></div>
+        <p class="note">Tape <code>/plugin</code> dans la zone de message et valide. Ensuite, chaque amélioration arrive toute seule au démarrage de l'application.</p>
+      </div></li>
+      <li><div>
+        <h3>Ouvre une nouvelle session et colle un lien vidéo</h3>
+        <p>C'est prêt. Pour chaque vidéo, une nouvelle session avec les mêmes réglages, et juste le lien.</p>
+      </div></li>
     </ol>
   </section>
 
-  <section aria-labelledby="t-use">
-    <h2 id="t-use">Au quotidien</h2>
+  <section aria-labelledby="t-modes">
+    <div class="head">
+      <h2 id="t-modes">Ce que tu peux demander</h2>
+      <p>Écris le lien, suivi des mots indiqués. Tout se combine : « max de 1:20 à 2:05 » marche.</p>
+    </div>
+    <div class="modes">
+      <div class="mode"><h3>WhatsApp</h3><span class="say">un lien seul</span><p>La meilleure qualité possible sous 180 Mo, sans perte quand la vidéo est déjà compatible.</p><span class="tag">Par défaut</span></div>
+      <div class="mode"><h3>Discord ou e-mail</h3><span class="say">« pour Discord » · « par mail »</span><p>Même méthode, sous 10 Mo pour Discord ou en pièce jointe acceptée par Gmail et Outlook.</p><span class="tag">Version légère</span></div>
+      <div class="mode"><h3>Qualité max</h3><span class="say">« max »</span><p>Le fichier d'origine, en pleine qualité, sans limite de taille. « les deux » donne Max et WhatsApp.</p><span class="tag">Sans réencodage</span></div>
+      <div class="mode"><h3>MP3</h3><span class="say">« en mp3 »</span><p>Seulement le son : podcast, conférence, musique.</p><span class="tag">Audio</span></div>
+      <div class="mode"><h3>Extrait</h3><span class="say">« de 1:20 à 2:05 »</span><p>Juste le passage qui t'intéresse, coupé à l'image près. « à partir de 3:10 » marche aussi.</p><span class="tag">Avec toutes les versions</span></div>
+      <div class="mode"><h3>Résumé ou texte</h3><span class="say">« résume » · « le texte »</span><p>Claude lit les sous-titres de la vidéo et te la résume, ou t'en donne le texte complet dans un fichier.</p><span class="tag">Sans télécharger la vidéo</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-cmd">
+    <div class="head">
+      <h2 id="t-cmd">Commandes utiles</h2>
+      <p>À taper dans une session de l'onglet Code.</p>
+    </div>
     <div class="tbl">
       <table>
-        <thead><tr><th>Tu écris</th><th>Claude fait</th></tr></thead>
+        <thead><tr><th>Tu tapes</th><th>Pour</th></tr></thead>
         <tbody>
-          <tr><td>un lien</td><td>la version par défaut (WhatsApp, sauf si tu as choisi autre chose)</td></tr>
-          <tr><td>un lien + « max »</td><td>la version qualité maximale</td></tr>
-          <tr><td>un lien + « les deux »</td><td>la version qualité maximale et la version légère</td></tr>
-          <tr><td>un lien + « pour Discord » ou « par mail »</td><td>une version sous la limite de Discord ou des pièces jointes</td></tr>
-          <tr><td>un lien + « en mp3 »</td><td>le son seul</td></tr>
-          <tr><td>un lien + « de 1:20 à 2:05 »</td><td>seulement ce passage (marche avec toutes les versions)</td></tr>
-          <tr><td>un lien + « résume »</td><td>un résumé de la vidéo, sans la télécharger</td></tr>
-          <tr><td>un lien + « donne-moi le texte »</td><td>le texte complet dans un fichier</td></tr>
-          <tr><td>plusieurs liens</td><td>chaque vidéo, l'une après l'autre</td></tr>
-          <tr><td>une capture d'un post</td><td>il retrouve le post et télécharge la vidéo</td></tr>
           <tr><td><code>/video-downloader:reglages</code></td><td>changer le dossier, la version par défaut ou le navigateur à utiliser</td></tr>
-          <tr><td><code>/video-downloader:signaler</code></td><td>signaler un problème ou proposer une idée</td></tr>
+          <tr><td><code>/video-downloader:installation</code></td><td>réparer ou réinstaller les outils</td></tr>
+          <tr><td><code>/video-downloader:signaler</code></td><td>signaler un problème ou proposer une idée à l'auteur</td></tr>
+          <tr><td><code>/plugin</code></td><td>vérifier que les mises à jour automatiques sont activées</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">Posts LinkedIn, Instagram ou Facebook réservés aux membres : Claude propose d'utiliser la connexion de ton navigateur. Dans WhatsApp, envoie le fichier en <b>Document</b> pour éviter qu'il soit recompressé.</p>
   </section>
 
-  <section aria-labelledby="t-maj">
-    <h2 id="t-maj">Mises à jour</h2>
-    <p>Elles arrivent toutes seules au démarrage de l'application. Pour vérifier : tape <code>/plugin</code>, onglet <b>Marketplaces</b>, <b>video-tools</b>, l'option <b>auto-update</b> doit être active.</p>
+  <section aria-labelledby="t-faq">
+    <div class="head">
+      <h2 id="t-faq">Si ça bloque</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>Claude dit qu'il n'a pas pu activer les mises à jour automatiques</summary>
+        <div class="ans"><p>C'est normal : le mode Auto l'empêche de modifier ses propres réglages. Fais l'étape 4 à la main : <code>/plugin</code>, onglet Marketplaces, video-tools, auto-update activé.</p></div>
+      </details>
+      <details>
+        <summary>« Outils manquants après installation »</summary>
+        <div class="ans"><p>Windows n'a pas encore pris en compte les nouveaux outils. Quitte complètement l'application Claude (sous Windows, aussi depuis l'icône près de l'horloge), rouvre-la, puis tape <code>/video-downloader:installation</code> dans une nouvelle session.</p></div>
+      </details>
+      <details>
+        <summary>Une vidéo LinkedIn, Instagram ou Facebook ne se télécharge pas</summary>
+        <div class="ans"><p>Le post est sûrement réservé aux personnes connectées. Claude propose alors d'utiliser la connexion de ton navigateur. Sous Windows, ferme Chrome et Edge pendant le téléchargement ; Firefox peut rester ouvert.</p></div>
+      </details>
+      <details>
+        <summary>WhatsApp abîme la qualité de la vidéo</summary>
+        <div class="ans"><p>Envoie le fichier en <b>Document</b> plutôt qu'en vidéo : WhatsApp ne le recompresse pas.</p></div>
+      </details>
+      <details>
+        <summary>Autre problème</summary>
+        <div class="ans"><p>Tape <code>/video-downloader:signaler</code> et décris ce qui se passe. Claude prépare un ticket pour l'auteur, te le montre et l'envoie avec ton accord.</p></div>
+      </details>
+    </div>
   </section>
 
   <footer>
-    <span>Code source, documentation complète et historique : <a href="https://github.com/miguelcorradopicq/claude-video-downloader">github.com/miguelcorradopicq/claude-video-downloader</a></span>
+    <span>Code source, documentation et historique des versions : <a href="https://github.com/miguelcorradopicq/claude-video-downloader">github.com/miguelcorradopicq/claude-video-downloader</a></span>
     <span>Ne télécharge que des vidéos que tu as le droit de télécharger.</span>
   </footer>
 </main>

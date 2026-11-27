@@ -26,7 +26,9 @@ Il faut l'**application Claude** pour ordinateur (Windows ou Mac), avec l'onglet
 3. Claude installe tout seul le plugin, les outils nécessaires (yt-dlp, ffmpeg et deno) et les mises à jour automatiques. Il te pose une seule question : dans quel dossier enregistrer les vidéos, et quelle version faire par défaut. Accepte les autorisations qu'il demande.
 4. Ouvre une **nouvelle** session et colle un lien vidéo. C'est tout.
 
-Le choix du modèle, de l'effort et du dossier de travail dans l'application n'a pas d'importance : n'importe quel modèle sait utiliser l'outil.
+Réglages conseillés pour la session : environnement **This computer** (pas Cloud), aucun dossier, modèle **Sonnet**, effort **Medium**, autorisations **Auto**. N'importe quel modèle sait utiliser l'outil.
+
+Si Claude n'a pas pu activer les mises à jour automatiques (le mode Auto le bloque), tape `/plugin`, onglet **Marketplaces**, **video-tools**, et active **auto-update**.
 
 ### Installation manuelle (si tu as la commande `claude` dans un terminal)
 

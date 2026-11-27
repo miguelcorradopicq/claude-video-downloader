@@ -2,6 +2,11 @@
 
 Chaque envoi sur GitHub est une nouvelle version : les utilisateurs la reçoivent automatiquement au démarrage suivant de l'application Claude.
 
+## 2026-11-27 (2)
+
+- Page d'installation refaite en noir et blanc, avec les réglages exacts de la session (Code, This computer, Sonnet, Medium, Auto), une étape pour vérifier les mises à jour automatiques et une rubrique « Si ça bloque ».
+- Si le mode Auto empêche Claude d'activer les mises à jour automatiques, il donne maintenant les étapes à suivre dans `/plugin` au lieu de demander de modifier un fichier.
+
 ## 2026-11-27
 
 - **MP3** : « en mp3 » ou « juste le son » garde seulement l'audio.

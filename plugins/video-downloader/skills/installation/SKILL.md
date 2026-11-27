@@ -43,6 +43,12 @@ Ouvre `~/.claude/settings.json` (Windows : `%USERPROFILE%\.claude\settings.json`
 
 Ajoute ou corrige seulement cette entrée, sans toucher au reste du fichier, et vérifie que le JSON reste valide. Dans `enabledPlugins`, `"video-downloader@video-tools": true` doit être présent.
 
+Si la modification est refusée (le mode auto protège ce fichier, ou l'utilisateur a refusé l'autorisation), ne réessaie pas et ne lui demande pas d'éditer le fichier. Donne-lui ces étapes, en une liste courte :
+1. taper `/plugin` dans la session et valider ;
+2. aller dans l'onglet **Marketplaces** ;
+3. choisir **video-tools** ;
+4. activer **auto-update**.
+
 ## 5. Essai
 
 Télécharge cette courte vidéo publique avec le mode par défaut, puis vérifie que le fichier est bien dans le dossier choisi : `https://www.youtube.com/shorts/xIg2FZO7LUg`. Propose ensuite de supprimer le fichier d'essai (seulement si l'utilisateur dit oui).

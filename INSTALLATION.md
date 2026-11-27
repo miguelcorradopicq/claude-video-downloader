@@ -47,6 +47,8 @@ Puis dis à l'utilisateur de quitter complètement l'application Claude, de la r
 
 Dans `~/.claude/settings.json`, l'entrée `extraKnownMarketplaces.video-tools` doit contenir `"autoUpdate": true` à côté de `source` (voir l'exemple ci-dessus). Ajoute-le s'il manque, sans toucher au reste.
 
+Si cette modification est refusée (le mode auto protège ce fichier, ou l'utilisateur a refusé l'autorisation), ne réessaie pas et ne lui demande pas d'éditer le fichier. À la fin (étape 5), donne-lui ces étapes : taper `/plugin`, onglet **Marketplaces**, choisir **video-tools**, activer **auto-update**.
+
 ## 4. Outils, réglages et essai
 
 Le plugin est maintenant dans `~/.claude/plugins/marketplaces/video-tools/plugins/video-downloader/`. Suis les étapes 1 à 6 de son fichier `skills/installation/SKILL.md`, en remplaçant `${CLAUDE_SKILL_DIR}/..` par `~/.claude/plugins/marketplaces/video-tools/plugins/video-downloader/skills`. Le script est donc :
