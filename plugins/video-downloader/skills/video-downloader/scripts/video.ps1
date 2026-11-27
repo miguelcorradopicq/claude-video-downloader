@@ -1,24 +1,38 @@
 ﻿<#
 .SYNOPSIS
-  Télécharge une vidéo (yt-dlp) et/ou la prépare : version WhatsApp (meilleure qualité sous la limite) et/ou version Max.
+  Télécharge une vidéo (yt-dlp) et la prépare : version légère (WhatsApp, Discord, e-mail), version Max,
+  son seul en MP3, extrait, ou texte des sous-titres.
 
 .DESCRIPTION
-  Compatible Windows PowerShell 5.1 et PowerShell 7 (Windows, macOS, Linux). Nécessite yt-dlp, ffmpeg et ffprobe.
+  Compatible Windows PowerShell 5.1 et PowerShell 7 (Windows, macOS, Linux). Nécessite yt-dlp, ffmpeg et ffprobe
+  (et deno, moteur JavaScript dont yt-dlp a besoin pour YouTube).
 
-  Version WhatsApp : la meilleure qualité possible sous la limite, sans jamais gonfler le fichier.
+  Version légère (Mode WhatsApp, avec -Pour WhatsApp|Discord|Email) : la meilleure qualité possible sous la limite,
+  sans jamais gonfler le fichier.
     1. Déjà en H.264/AAC et sous la limite -> simple copie (remux), aucune perte.
     2. Sinon, le script MESURE la vidéo : trois extraits de 15 s encodés en CRF 22 à chaque hauteur
        (1080, 720, 540, 480, 360 sur le petit côté) ; il garde la plus haute qui tient.
     3. Encodage final en 2 passes au plus petit de (budget, débit d'un CRF 18).
+    Limites : WhatsApp 178 Mo (réglage LimiteMo), Discord 9,5 Mo, e-mail 13,5 Mo (Gmail 25 Mo et Outlook 20 Mo,
+    encodage de la pièce jointe compris). -LimiteMo force une autre limite.
   Version Max : le meilleur fichier fourni par le site, sans réencodage.
-  LesDeux : les deux fichiers, suffixés « - WhatsApp » et « - Max ».
+  LesDeux : la version Max et la version légère, suffixées « - Max » et « - WhatsApp » (ou Discord, Email).
+  Audio : le son seul, en MP3 (VBR qualité 2, environ 190 kb/s).
+  Extrait : -Debut 1:20 -Fin 2:05 (l'un ou l'autre suffit) coupe avant de préparer la version demandée.
+  Texte : -Texte enregistre le texte des sous-titres (langue d'origine, sinon français, sinon anglais) dans un .txt.
 
-  Réglages (dossier, version par défaut, limite, navigateur) : ~/.video-downloader.json,
+  yt-dlp est mis à jour automatiquement une fois par semaine (winget ou Homebrew), au premier téléchargement.
+
+  Réglages (dossier, version par défaut, limite WhatsApp, navigateur) : ~/.video-downloader.json,
   créés ou modifiés avec -Enregistrer.
 
 .EXAMPLE
   ./video.ps1 "https://youtu.be/xxxx"
   ./video.ps1 "https://youtu.be/xxxx" -Mode Max
+  ./video.ps1 "https://youtu.be/xxxx" -Mode Audio
+  ./video.ps1 "https://youtu.be/xxxx" -Debut 1:20 -Fin 2:05
+  ./video.ps1 "https://youtu.be/xxxx" -Pour Discord
+  ./video.ps1 "https://youtu.be/xxxx" -Texte
   ./video.ps1 -Enregistrer -Dossier "D:\Vidéos" -Mode WhatsApp
   ./video.ps1 -Reglages
   ./video.ps1 -Verifier
@@ -26,7 +40,11 @@
 #>
 param(
   [Parameter(Position = 0)][string]$Source,
-  [ValidateSet('WhatsApp', 'Max', 'LesDeux')][string]$Mode,
+  [ValidateSet('WhatsApp', 'Max', 'LesDeux', 'Audio')][string]$Mode,
+  [ValidateSet('WhatsApp', 'Discord', 'Email')][string]$Pour = 'WhatsApp', # destination de la version légère
+  [string]$Debut,          # début de l'extrait : 80, 1:20 ou 1:02:03
+  [string]$Fin,            # fin de l'extrait
+  [switch]$Texte,          # récupérer le texte des sous-titres au lieu de la vidéo
   [string]$Dossier,
   [double]$LimiteMo = 0,
   [string]$Navigateur,     # navigateur dont on reprend la connexion : chrome, edge, firefox, safari, brave
@@ -45,6 +63,7 @@ $surMac = (-not $surWindows) -and $IsMacOS
 $nulDev = if ($surWindows) { 'NUL' } else { '/dev/null' }
 $maison = [Environment]::GetFolderPath('UserProfile')
 $cheminReglages = Join-Path $maison '.video-downloader.json'
+$invariant = [Globalization.CultureInfo]::InvariantCulture
 
 # --- Réglages ---------------------------------------------------------------
 $cfg = [pscustomobject]@{ Dossier = (Join-Path $maison 'Downloads'); Mode = 'WhatsApp'; LimiteMo = 178; Navigateur = '' }
@@ -89,6 +108,18 @@ function Get-Manquants([switch]$AvecDeno) {
   $outils = @('yt-dlp', 'ffmpeg', 'ffprobe'); if ($AvecDeno) { $outils += 'deno' }
   $outils | Where-Object { -not (Get-Command $_ -ErrorAction SilentlyContinue) }
 }
+# yt-dlp doit suivre les changements des sites : mise à jour au plus une fois par semaine.
+function Update-YtDlp {
+  $marque = Join-Path $maison '.video-downloader-maj'
+  if ((Test-Path -LiteralPath $marque) -and ((Get-Date) - (Get-Item -LiteralPath $marque).LastWriteTime).TotalDays -lt 7) { return }
+  [IO.File]::WriteAllText($marque, (Get-Date -Format s))
+  try {
+    if ($surWindows -and (Get-Command winget -ErrorAction SilentlyContinue)) {
+      winget upgrade --id yt-dlp.yt-dlp -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
+    } elseif ($surMac -and (Get-Command brew -ErrorAction SilentlyContinue)) { brew upgrade yt-dlp | Out-Null }
+    Write-Host "MISE A JOUR : yt-dlp vérifié (version $(& yt-dlp --version))"
+  } catch { Write-Host "MISE A JOUR : yt-dlp n'a pas pu être vérifié, on continue." }
+}
 Update-Path
 if ($InstallerOutils) {
   $m = Get-Manquants -AvecDeno
@@ -118,13 +149,37 @@ $manquants = Get-Manquants
 if ($manquants) { throw "Outils manquants : $($manquants -join ', '). Lance d'abord le script avec -InstallerOutils." }
 if (-not (Get-Command deno -ErrorAction SilentlyContinue)) { Write-Host "DENO MANQUANT : yt-dlp en a besoin pour YouTube. Lance le script avec -InstallerOutils pour l'ajouter." }
 if (-not $Source) { throw 'Donne un lien ou un fichier vidéo.' }
+
+# --- Paramètres du téléchargement -------------------------------------------
+if ($PSBoundParameters.ContainsKey('Pour') -and -not $Mode) { $Mode = 'WhatsApp' }   # « pour Discord » = version légère
 if (-not $Dossier) { $Dossier = $cfg.Dossier }
 if (-not $Mode) { $Mode = $cfg.Mode }
-if ($LimiteMo -le 0) { $LimiteMo = [double]$cfg.LimiteMo }
+if ($LimiteMo -le 0) { $LimiteMo = @{ WhatsApp = [double]$cfg.LimiteMo; Discord = 9.5; Email = 13.5 }[$Pour] }
 if (-not $Navigateur -and -not $SansNavigateur) { $Navigateur = $cfg.Navigateur }
+
+function ConvertTo-Secondes([string]$t) {
+  if ($t -notmatch '^\d+(:\d{1,2}){0,2}([.,]\d+)?$') { throw "Temps invalide : « $t ». Exemples : 80, 1:20, 1:02:03." }
+  $s = 0.0
+  foreach ($p in $t.Replace(',', '.').Split(':')) { $s = $s * 60 + [double]::Parse($p, $invariant) }
+  $s
+}
+function Format-Temps([double]$s) {
+  $ts = [TimeSpan]::FromSeconds([math]::Floor($s))
+  if ($ts.Hours -gt 0) { '{0}h{1:00}m{2:00}' -f $ts.Hours, $ts.Minutes, $ts.Seconds } else { '{0}m{1:00}' -f $ts.Minutes, $ts.Seconds }
+}
+$extrait = [bool]($Debut -or $Fin)
+$coupeIn = @(); $coupeOut = @()
+if ($extrait) {
+  $sDebut = if ($Debut) { ConvertTo-Secondes $Debut } else { 0 }
+  $sFin = if ($Fin) { ConvertTo-Secondes $Fin } else { $null }
+  if ($null -ne $sFin -and $sFin -le $sDebut) { throw "La fin de l'extrait ($Fin) doit être après le début ($Debut)." }
+  if ($sDebut -gt 0) { $coupeIn = @('-ss', $sDebut.ToString($invariant)) }
+  if ($null -ne $sFin) { $coupeOut = @('-t', ($sFin - $sDebut).ToString($invariant)) }
+  $etiquette = 'extrait {0}-{1}' -f (Format-Temps $sDebut), $(if ($null -ne $sFin) { Format-Temps $sFin } else { 'fin' })
+}
+
 $ffmpeg = (Get-Command ffmpeg).Source
 $ffprobe = (Get-Command ffprobe).Source
-
 $travail = Join-Path ([IO.Path]::GetTempPath()) ('video-downloader-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
 New-Item -ItemType Directory -Force -Path $travail, $Dossier | Out-Null
 $suffixe = $Mode -eq 'LesDeux'
@@ -133,6 +188,7 @@ try {
   # --- 1. Source ------------------------------------------------------------
   $telecharge = $false
   if ($Source -match '^https?://') {
+    Update-YtDlp
     $url = $Source
     # Liens courts LinkedIn et paramètres de partage : on résout et on nettoie
     if ($url -match '^https?://lnkd\.in/') {
@@ -144,21 +200,78 @@ try {
       } catch { }
     }
     if ($url -match 'linkedin\.com/') { $url = ($url -split '\?')[0] }
+    $format = if ($Mode -eq 'Audio') { 'ba/b' } else { 'bv*[vcodec^=avc1]+ba[ext=m4a]/bv*+ba/b' }
     $ytArgs = @('--ignore-config', '--no-progress', '--no-playlist',
-      '-f', 'bv*[vcodec^=avc1]+ba[ext=m4a]/bv*+ba/b', '--merge-output-format', 'mp4',
       '-o', '%(uploader,channel,creator|Video)s - %(title).80B [%(id).40B].%(ext)s',
       '--windows-filenames', '-P', $travail)
+    if ($Texte) {
+      # Sous-titres seulement : langue d'origine (pistes « -orig » de YouTube), sinon français, sinon anglais
+      $ytArgs += @('--skip-download', '--write-subs', '--write-auto-subs', '--sub-format', 'vtt/srt/best',
+        '--sub-langs', 'fr,fr-FR,fr-orig,en,en-US,en-GB,.*-orig')
+    } else { $ytArgs += @('-f', $format, '--merge-output-format', 'mp4') }
     if ($Navigateur) { $ytArgs += @('--cookies-from-browser', $Navigateur) }
     $ytArgs += $url
     & yt-dlp @ytArgs | Out-Host
+
+    # --- Texte des sous-titres ----------------------------------------------
+    if ($Texte) {
+      $subs = @(Get-ChildItem -LiteralPath $travail -File | Where-Object { $_.Extension -in '.vtt', '.srt' })
+      if (-not $subs) { Write-Host "PAS DE SOUS-TITRES : cette vidéo n'a ni sous-titres ni sous-titres automatiques ; impossible d'en tirer le texte."; return }
+      $choix = $null
+      foreach ($motif in '\.fr-orig\.', '-orig\.', '\.fr(-FR)?\.', '\.en(-\w+)?\.') {
+        $choix = $subs | Where-Object { $_.Name -match $motif } | Select-Object -First 1
+        if ($choix) { break }
+      }
+      if (-not $choix) { $choix = $subs[0] }
+      $sansExt = [IO.Path]::GetFileNameWithoutExtension($choix.Name)   # « titre [id].fr-orig »
+      $langue = [IO.Path]::GetExtension($sansExt).TrimStart('.')
+      $baseTexte = [IO.Path]::GetFileNameWithoutExtension($sansExt)
+      $lignes = New-Object System.Collections.Generic.List[string]
+      foreach ($l in (Get-Content -LiteralPath $choix.FullName -Encoding UTF8)) {
+        $l = $l.Trim()
+        if (-not $l -or $l -eq 'WEBVTT' -or $l -match '-->' -or $l -match '^\d+$' -or $l -match '^(Kind|Language|NOTE|STYLE)\b') { continue }
+        $l = (($l -replace '<[^>]+>', '') -replace '&nbsp;', ' ' -replace '&amp;', '&' -replace '&lt;', '<' -replace '&gt;', '>' -replace '&#39;', "'" -replace '&quot;', '"').Trim()
+        # Les sous-titres automatiques répètent la ligne précédente à chaque bloc : on ne la garde qu'une fois
+        if ($l -and ($lignes.Count -eq 0 -or $lignes[$lignes.Count - 1] -ne $l)) { $lignes.Add($l) }
+      }
+      # Lignes d'environ 100 caractères, plus faciles à lire qu'un seul bloc
+      $mots = ($lignes -join ' ') -split '\s+' | Where-Object { $_ }
+      $sortieTexte = New-Object System.Text.StringBuilder
+      [void]$sortieTexte.AppendLine("Source : $Source").AppendLine("Langue des sous-titres : $langue").AppendLine()
+      $ligne = ''
+      foreach ($mot in $mots) {
+        if ($ligne.Length + $mot.Length + 1 -gt 100) { [void]$sortieTexte.AppendLine($ligne); $ligne = $mot } else { $ligne = if ($ligne) { "$ligne $mot" } else { $mot } }
+      }
+      if ($ligne) { [void]$sortieTexte.AppendLine($ligne) }
+      $fichierTexte = Join-Path $Dossier "$baseTexte.txt"
+      [IO.File]::WriteAllText($fichierTexte, $sortieTexte.ToString(), (New-Object Text.UTF8Encoding $true))
+      Write-Host ("TEXTE    : {0}  ({1} mots, langue {2})" -f $fichierTexte, @($mots).Count, $langue)
+      return
+    }
+
     $src = Get-ChildItem -LiteralPath $travail -File |
       Where-Object { $_.Extension -notin '.part', '.ytdl', '.json', '.jpg', '.webp', '.png', '.vtt', '.srt' } |
       Sort-Object Length -Descending | Select-Object -First 1 -ExpandProperty FullName
     if (-not $src) { throw "ECHEC DU TELECHARGEMENT : aucune vidéo récupérée. Si le site demande d'être connecté, relance avec -Navigateur chrome (ou edge, firefox, safari)." }
     $telecharge = $true
-  } else { $src = (Resolve-Path -LiteralPath $Source).Path }
+  } else {
+    if ($Texte) { throw 'Le texte ne peut être récupéré que depuis un lien.' }
+    $src = (Resolve-Path -LiteralPath $Source).Path
+  }
   $base = [IO.Path]::GetFileNameWithoutExtension($src)
   $ext = [IO.Path]::GetExtension($src)
+
+  # --- 2. Extrait -----------------------------------------------------------
+  if ($extrait) {
+    $base = "$base - $etiquette"
+    if ($Mode -ne 'Audio') {
+      # Découpe précise à l'image près : réencodage en qualité quasi transparente (CRF 18)
+      $coupe = Join-Path $travail 'extrait.mp4'
+      & $ffmpeg -y -hide_banner -loglevel error @coupeIn -i $src @coupeOut -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart $coupe
+      if (-not (Test-Path -LiteralPath $coupe)) { throw "ECHEC DE LA DECOUPE : vérifie que le début et la fin sont dans la durée de la vidéo." }
+      $src = $coupe; $ext = '.mp4'; $coupeIn = @(); $coupeOut = @()
+    }
+  }
 
   function Get-Info($f) {
     $j = & $ffprobe -v error -show_entries 'format=duration,size:stream=codec_type,codec_name,width,height,bit_rate' -of json $f | Out-String | ConvertFrom-Json
@@ -172,31 +285,43 @@ try {
   }
   function Get-Filtre($h) { "scale='if(gt(iw,ih),-2,$h)':'if(gt(iw,ih),$h,-2)'" }
 
-  # --- 2. Version Max -------------------------------------------------------
+  # --- 3. Audio seul (MP3) --------------------------------------------------
+  if ($Mode -eq 'Audio') {
+    $sortie = Join-Path $Dossier "$base.mp3"
+    $tmp = Join-Path $travail 'sortie.mp3'
+    & $ffmpeg -y -hide_banner -loglevel error @coupeIn -i $src @coupeOut -vn -c:a libmp3lame -q:a 2 $tmp
+    if (-not (Test-Path -LiteralPath $tmp)) { throw "ECHEC DE L'EXTRACTION DU SON : cette vidéo n'a peut-être pas de piste audio." }
+    Move-Item -LiteralPath $tmp -Destination $sortie -Force
+    Write-Host ("AUDIO    : {0}  ({1:N1} Mo)  MP3" -f $sortie, ((Get-Item -LiteralPath $sortie).Length / 1MB))
+    return
+  }
+
+  # --- 4. Version Max -------------------------------------------------------
   if ($Mode -in 'Max', 'LesDeux') {
-    if ($telecharge) {
+    if ($telecharge -or $extrait) {
       $nom = if ($suffixe) { "$base - Max$ext" } else { "$base$ext" }
       $dest = Join-Path $Dossier $nom
       if ($suffixe) { Copy-Item -LiteralPath $src -Destination $dest -Force }
       else { Move-Item -LiteralPath $src -Destination $dest -Force; $src = $dest }
-      Write-Host ("MAX      : {0}  ({1:N1} Mo)" -f $dest, ((Get-Item -LiteralPath $dest).Length / 1MB))
+      Write-Host ("MAX      : {0}  ({1:N1} Mo){2}" -f $dest, ((Get-Item -LiteralPath $dest).Length / 1MB), $(if ($extrait) { '  extrait réencodé en CRF 18 (qualité quasi identique)' } else { '' }))
     } else { Write-Host 'MAX      : fichier local conservé tel quel.' }
   }
 
-  # --- 3. Version WhatsApp --------------------------------------------------
+  # --- 5. Version légère (WhatsApp, Discord, e-mail) -------------------------
   if ($Mode -in 'WhatsApp', 'LesDeux') {
     $info = Get-Info $src
     $budget = $LimiteMo * 1MB * 0.985          # marge : l'encodage 2 passes dépasse d'environ 1,3 %
-    $nomSortie = if ($suffixe) { "$base - WhatsApp.mp4" } else { "$base.mp4" }
+    $nomSortie = if ($suffixe) { "$base - $Pour.mp4" } else { "$base.mp4" }
     $sortie = Join-Path $Dossier $nomSortie
     $tmp = Join-Path $travail 'sortie.mp4'
+    $serre = ($budget * 8 / $info.Dur) -lt 600000  # moins de 600 kb/s au total : on économise sur le son
 
     if ($info.V -eq 'h264' -and ($info.A -eq 'aac' -or -not $info.A) -and $info.Size -le $budget) {
       & $ffmpeg -y -hide_banner -loglevel error -i $src -c copy -movflags +faststart $tmp
       $comment = 'copiée sans réencodage (déjà compatible, aucune perte)'
     } else {
-      if ($info.A -eq 'aac' -and $info.ABps -gt 0 -and $info.ABps -le 132000) { $aArgs = @('-c:a', 'copy'); $abps = $info.ABps }
-      elseif ($info.A) { $ab = if ($info.Dur -gt 1200) { 96 } else { 128 }; $aArgs = @('-c:a', 'aac', '-b:a', "${ab}k", '-ac', '2', '-ar', '44100'); $abps = $ab * 1000 }
+      if ($info.A -eq 'aac' -and $info.ABps -gt 0 -and $info.ABps -le 132000 -and -not $serre) { $aArgs = @('-c:a', 'copy'); $abps = $info.ABps }
+      elseif ($info.A) { $ab = if ($serre) { 64 } elseif ($info.Dur -gt 1200) { 96 } else { 128 }; $aArgs = @('-c:a', 'aac', '-b:a', "${ab}k", '-ac', '2', '-ar', '44100'); $abps = $ab * 1000 }
       else { $aArgs = @('-an'); $abps = 0 }
 
       $vb = ($budget * 8 / $info.Dur) - $abps   # débit vidéo disponible (bit/s)
@@ -234,8 +359,9 @@ try {
       }
       $comment = "réencodée en ${h}p, vidéo $([int]($cible / 1000)) kb/s ($pourquoi)"
     }
+    if ((Get-Item -LiteralPath $tmp).Length -gt $LimiteMo * 1MB) { $comment += " ; ATTENTION : dépasse encore la limite de $LimiteMo Mo, propose un extrait plus court" }
     Move-Item -LiteralPath $tmp -Destination $sortie -Force
-    Write-Host ("WHATSAPP : {0}  ({1:N2} Mo)  {2}" -f $sortie, ((Get-Item -LiteralPath $sortie).Length / 1MB), $comment)
+    Write-Host ("{0,-8} : {1}  ({2:N2} Mo)  {3}" -f $Pour.ToUpper(), $sortie, ((Get-Item -LiteralPath $sortie).Length / 1MB), $comment)
   }
 } finally {
   Remove-Item -LiteralPath $travail -Recurse -Force -ErrorAction SilentlyContinue

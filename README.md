@@ -5,6 +5,10 @@ Colle un lien vidéo dans Claude Code (YouTube, Shorts, LinkedIn, Facebook, Inst
 - **WhatsApp** (par défaut) : la meilleure qualité possible sous la limite de 180 Mo de WhatsApp. Si la vidéo est déjà compatible, elle est copiée sans aucune perte. Sinon, l'outil mesure la vidéo et choisit la résolution et le débit, sans jamais gonfler le fichier inutilement.
 - **Max** : le meilleur fichier fourni par le site, sans réencodage. Écris « max » avec le lien.
 - **Les deux** : écris « les deux ».
+- **Discord ou e-mail** : écris « pour Discord » (moins de 10 Mo) ou « par mail » (pièce jointe acceptée par Gmail et Outlook). Même méthode que pour WhatsApp.
+- **MP3** : écris « en mp3 » pour garder seulement le son.
+- **Extrait** : écris « de 1:20 à 2:05 » (ou seulement un début ou une fin) pour ne garder qu'un passage, avec n'importe quelle version.
+- **Résumé ou texte** : écris « résume » pour que Claude te résume la vidéo, ou « donne-moi le texte » pour la transcription complète dans un fichier. Le texte vient des sous-titres de la vidéo.
 
 Astuce : dans WhatsApp, envoie le fichier en **Document** pour éviter que WhatsApp le recompresse.
 
@@ -43,6 +47,11 @@ Puis, dans une session : `/video-downloader:installation`.
 | un lien | la version par défaut (WhatsApp, sauf si tu as choisi autre chose) |
 | un lien + « max » | la version qualité maximale |
 | un lien + « les deux » | les deux fichiers |
+| un lien + « pour Discord » / « par mail » | une version sous la limite de Discord (9,5 Mo) ou des pièces jointes (13,5 Mo) |
+| un lien + « en mp3 » | le son seul |
+| un lien + « de 1:20 à 2:05 » | seulement ce passage |
+| un lien + « résume » | un résumé, sans télécharger la vidéo |
+| un lien + « donne-moi le texte » | la transcription dans un fichier `.txt` |
 | plusieurs liens | chaque vidéo, l'une après l'autre |
 | une capture d'un post | il cherche le post et télécharge la vidéo |
 
@@ -91,7 +100,7 @@ Change-les en le demandant à Claude ou avec `/video-downloader:reglages`.
 - **deno** : moteur JavaScript dont yt-dlp a besoin pour YouTube ;
 - sur Mac seulement, **PowerShell** (`brew install powershell`), qui fait tourner le script.
 
-Sous Windows, ils sont installés avec winget ; sur Mac, avec Homebrew.
+Sous Windows, ils sont installés avec winget ; sur Mac, avec Homebrew. yt-dlp est mis à jour automatiquement une fois par semaine, pour suivre les changements des sites vidéo.
 
 ## Contenu du dépôt
 
@@ -108,7 +117,7 @@ plugins/video-downloader/
   skills/signaler/SKILL.md             signalement de problèmes et d'idées
 ```
 
-Le script peut aussi être lancé seul, sans Claude : `video.ps1 "<lien>" [-Mode WhatsApp|Max|LesDeux] [-Dossier "<dossier>"]`, et `video.ps1 -Reglages`, `-Verifier`, `-InstallerOutils`, `-Enregistrer`.
+Le script peut aussi être lancé seul, sans Claude : `video.ps1 "<lien>" [-Mode WhatsApp|Max|LesDeux|Audio] [-Pour WhatsApp|Discord|Email] [-Debut 1:20] [-Fin 2:05] [-Texte] [-Dossier "<dossier>"]`, et `video.ps1 -Reglages`, `-Verifier`, `-InstallerOutils`, `-Enregistrer`.
 
 ## Pour l'auteur
 

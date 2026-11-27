@@ -25,6 +25,14 @@ Ce fichier sert à reprendre le projet dans n'importe quelle session Claude Code
 - Sinon : trois extraits de 15 s encodés en CRF 22 à chaque hauteur (1080, 720, 540, 480, 360), on garde la plus haute qui tient ; encodage final libx264 en deux passes au plus petit du budget et du débit d'un CRF 18. Le résultat d'un encodage 2 passes dépasse d'environ 1,3 % le calcul, d'où la marge de 0,985.
 - Mesures : au même débit, le 720p bat le 540p (SSIM 0,996 contre 0,983 sur une conférence filmée).
 - WhatsApp refuse le VP9 ; un envoi en « Document » évite la recompression de WhatsApp (sources non officielles).
+- Mêmes calculs pour `-Pour Discord` (9,5 Mio, sous la limite de 10 Mo de Discord en version gratuite) et `-Pour Email` (13,5 Mio : une pièce jointe grossit d'environ 37 % à l'envoi, ce qui reste sous 20 Mo pour Outlook et 25 Mo pour Gmail). Sous 600 kb/s au total, le son est réencodé en 64 kb/s.
+
+## Autres fonctions du script
+
+- **Audio** (`-Mode Audio`) : télécharge seulement la meilleure piste audio (`-f ba/b`) puis la convertit en MP3 VBR qualité 2 (libmp3lame).
+- **Extrait** (`-Debut`, `-Fin`) : la vidéo entière est téléchargée, puis coupée avec ffmpeg (`-ss` avant `-i`, `-t` pour la durée) et réencodée en CRF 18 pour une coupe exacte ; la version demandée est préparée à partir de cet extrait. En mode Audio, la coupe est faite directement dans la conversion MP3. Le nom du fichier reçoit « - extrait 1m20-2m05 ».
+- **Texte** (`-Texte`) : yt-dlp récupère seulement les sous-titres (`--write-subs --write-auto-subs`, langues `fr`, `en` et toutes les pistes `-orig`). Priorité : `fr-orig`, puis toute piste `-orig` (langue d'origine des sous-titres automatiques de YouTube), puis `fr`, puis `en`. Les balises et les lignes répétées des sous-titres automatiques sont retirées, et le texte est coupé en lignes d'environ 100 caractères. Pour un résumé, le skill passe un dossier temporaire et supprime le fichier ensuite.
+- **Mise à jour de yt-dlp** : à chaque téléchargement depuis un lien, si le fichier `~/.video-downloader-maj` a plus de 7 jours, `winget upgrade --id yt-dlp.yt-dlp` (ou `brew upgrade yt-dlp`) puis la date est mise à jour, même en cas d'échec.
 
 ## Points connus
 

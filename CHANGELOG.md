@@ -2,6 +2,15 @@
 
 Chaque envoi sur GitHub est une nouvelle version : les utilisateurs la reçoivent automatiquement au démarrage suivant de l'application Claude.
 
+## 2026-11-27
+
+- **MP3** : « en mp3 » ou « juste le son » garde seulement l'audio.
+- **Extrait** : « de 1:20 à 2:05 » ne garde que ce passage, coupé à l'image près, avec n'importe quelle version.
+- **Résumé et texte** : « résume cette vidéo » donne un résumé sans télécharger la vidéo ; « donne-moi le texte » enregistre la transcription (tirée des sous-titres) dans un fichier `.txt`.
+- **Discord et e-mail** : « pour Discord » (9,5 Mo) ou « par mail » (13,5 Mo, accepté par Gmail et Outlook), avec la même méthode que la version WhatsApp. Le son passe à 64 kb/s quand la limite est très serrée.
+- **yt-dlp à jour tout seul** : vérification une fois par semaine, pour éviter les pannes quand YouTube change.
+- Avertissement si une version légère dépasse encore sa limite (vidéo trop longue) : Claude propose alors un extrait.
+
 ## 2026-11-25 (4)
 
 - YouTube : l'installation ajoute **deno**, le moteur JavaScript dont yt-dlp a besoin pour récupérer tous les formats. Si tu avais déjà installé l'outil, Claude l'ajoute tout seul au prochain téléchargement.

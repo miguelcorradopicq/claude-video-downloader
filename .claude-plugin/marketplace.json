@@ -6,7 +6,7 @@
     {
       "name": "video-downloader",
       "source": "./plugins/video-downloader",
-      "description": "Colle un lien vidéo : Claude la télécharge et prépare une version WhatsApp (meilleure qualité sous 180 Mo) ou une version qualité maximale."
+      "description": "Colle un lien vidéo : Claude la télécharge pour WhatsApp, Discord ou un e-mail (meilleure qualité sous la limite), en qualité maximale, en MP3 ou en extrait, et peut aussi te la résumer."
     }
   ]
 }

@@ -73,15 +73,18 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--lin
   <header>
     <div class="eyebrow">Plugin Claude Code · gratuit</div>
     <h1>Colle un lien, récupère la vidéo.</h1>
-    <p class="lead">YouTube, Shorts, LinkedIn, Instagram, TikTok, Facebook, X : Claude télécharge la vidéo sur ton ordinateur, prête à partager sur WhatsApp ou en qualité maximale. Aucun serveur, aucun compte à créer.</p>
+    <p class="lead">YouTube, Shorts, LinkedIn, Instagram, TikTok, Facebook, X : Claude télécharge la vidéo sur ton ordinateur, prête à partager sur WhatsApp, Discord ou par e-mail, en qualité maximale, en MP3 ou en extrait. Il peut aussi te la résumer. Aucun serveur, aucun compte à créer.</p>
   </header>
 
   <section aria-labelledby="t-modes">
-    <h2 id="t-modes">Deux versions au choix</h2>
+    <h2 id="t-modes">Ce que tu peux demander</h2>
     <div class="modes">
       <div class="mode"><b>WhatsApp</b><span>Par défaut. La meilleure qualité possible sous la limite de 180 Mo, sans perte quand la vidéo est déjà compatible.</span><code>un lien seul</code></div>
+      <div class="mode"><b>Discord ou e-mail</b><span>Même méthode, sous 10 Mo pour Discord ou en pièce jointe acceptée par Gmail et Outlook.</span><code>lien + « pour Discord »</code></div>
       <div class="mode"><b>Max</b><span>Le fichier d'origine, en pleine qualité, sans limite de taille.</span><code>lien + « max »</code></div>
-      <div class="mode"><b>Les deux</b><span>Les deux fichiers côte à côte, suffixés « WhatsApp » et « Max ».</span><code>lien + « les deux »</code></div>
+      <div class="mode"><b>MP3</b><span>Seulement le son : podcast, conférence, musique.</span><code>lien + « en mp3 »</code></div>
+      <div class="mode"><b>Extrait</b><span>Juste le passage qui t'intéresse, coupé à l'image près.</span><code>lien + « de 1:20 à 2:05 »</code></div>
+      <div class="mode"><b>Résumé ou texte</b><span>Claude lit les sous-titres et te résume la vidéo, ou t'en donne le texte complet.</span><code>lien + « résume »</code></div>
     </div>
   </section>
 
@@ -109,6 +112,12 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--lin
         <tbody>
           <tr><td>un lien</td><td>la version par défaut (WhatsApp, sauf si tu as choisi autre chose)</td></tr>
           <tr><td>un lien + « max »</td><td>la version qualité maximale</td></tr>
+          <tr><td>un lien + « les deux »</td><td>la version qualité maximale et la version légère</td></tr>
+          <tr><td>un lien + « pour Discord » ou « par mail »</td><td>une version sous la limite de Discord ou des pièces jointes</td></tr>
+          <tr><td>un lien + « en mp3 »</td><td>le son seul</td></tr>
+          <tr><td>un lien + « de 1:20 à 2:05 »</td><td>seulement ce passage (marche avec toutes les versions)</td></tr>
+          <tr><td>un lien + « résume »</td><td>un résumé de la vidéo, sans la télécharger</td></tr>
+          <tr><td>un lien + « donne-moi le texte »</td><td>le texte complet dans un fichier</td></tr>
           <tr><td>plusieurs liens</td><td>chaque vidéo, l'une après l'autre</td></tr>
           <tr><td>une capture d'un post</td><td>il retrouve le post et télécharge la vidéo</td></tr>
           <tr><td><code>/video-downloader:reglages</code></td><td>changer le dossier, la version par défaut ou le navigateur à utiliser</td></tr>
